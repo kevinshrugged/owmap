@@ -42,8 +42,8 @@
             }
 
             // Setup settings for graphic
-            var canvas_width = 500;
-            var canvas_height = 300;
+            var canvas_width = 1200;
+            var canvas_height = 600;
             var padding = 30;  // for chart edges
 
             // Create scale functions
@@ -77,8 +77,20 @@
                 .attr("width", canvas_width)
                 .attr("height", canvas_height)
 
+            var images = svg.append("svg:pattern")
+                        .attr("id", 1)
+                        .attr("width", 70)
+                        .attr("height", 70)
+                        .attr("patternUnits", "userSpaceOnUse")
+                        .append("svg:image")
+                        .attr("xlink:href", "http://localhost:8080/owmap/icons_drow.png")
+                        .attr("width", 70)
+                        .attr("height", 70)
+                        .attr("x", 0)
+                        .attr("y", 0);
+
             // Create Circles
-            svg.selectAll("circle")
+            var circles = svg.selectAll("circle")
                 .data(dataset)
                 .enter()
                 .append("circle")  // Add circle svg
@@ -88,7 +100,11 @@
                 .attr("cy", function(d) {  // Circle's Y
                     return yScale(d[1]);
                 })
-                .attr("r", 2);  // radius
+                .attr("r", 10)
+                .style("fill", "666")
+                ;  // radius
+
+
 
             // Add to X axis
             svg.append("g")
