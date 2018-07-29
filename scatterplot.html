@@ -77,17 +77,20 @@
                 .attr("width", canvas_width)
                 .attr("height", canvas_height)
 
-            var images = svg.append("svg:pattern")
-                        .attr("id", 1)
-                        .attr("width", 70)
-                        .attr("height", 70)
-                        .attr("patternUnits", "userSpaceOnUse")
-                        .append("svg:image")
-                        .attr("xlink:href", "http://localhost:8080/owmap/icons_drow.png")
-                        .attr("width", 70)
-                        .attr("height", 70)
-                        .attr("x", 0)
-                        .attr("y", 0);
+
+            var defs = svg.append("defs");
+
+            defs.append("pattern")
+              .attr("id", "fill1")
+              .attr("height", "100%")
+              .attr("width", "100%")
+              .attr("patternContentUInits", "objectBoundingBox")
+              .append("image")
+              .attr("height", 40)
+              .attr("width", 40)
+              .attr("preserveAspectRatio", "none")
+              .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+              .attr("xlink:href", "assets/icons_tracer_40.png");
 
             // Create Circles
             var circles = svg.selectAll("circle")
@@ -100,8 +103,10 @@
                 .attr("cy", function(d) {  // Circle's Y
                     return yScale(d[1]);
                 })
-                .attr("r", 10)
-                .style("fill", "666")
+                .attr("r", 20)
+                .attr("stroke", "#565656")
+                .attr("stroke-width", 1)
+                .style("fill", "url(#fill1)")
                 ;  // radius
 
 
@@ -143,7 +148,7 @@
                         .duration(1000)  // Length of animation
                         .each("start", function() {  // Start animation
                             d3.select(this)  // 'this' means the current element
-                                .attr("fill", "red")  // Change color
+                                .attr("fill", "black")  // Change color
                                 .attr("r", 5);  // Change size
                         })
                         .delay(function(d, i) {
@@ -160,8 +165,8 @@
                             d3.select(this)  // 'this' means the current element
                                 .transition()
                                 .duration(500)
-                                .attr("fill", "black")  // Change color
-                                .attr("r", 2);  // Change radius
+                                .attr("fill", "url(#fill1)")  // Change color
+                                .attr("r", 20);  // Change radius
                         });
 
                         // Update X Axis
