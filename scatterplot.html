@@ -11,7 +11,7 @@
             .axis path,
             .axis line {
                 fill: none;
-                stroke: blue;
+                stroke: black;
                 shape-rendering: crispEdges;
             }
 
@@ -23,9 +23,9 @@
     <!-- End CSS (Styling) -->
 
   <body>
-    <h2>D3 Scatterplot </h2>
-    <p>This is a data visualization using transitions with a scatterplot</p>
-    <h4>Click on this text to update chart with new values</h4>
+    <h2>OW Map Test</h2>
+    <p>This is the first draft of a dynamic minimap for overwatch</p>
+    <h4>Click to randomize position</h4>
     <h3></h3>
 
   <!-- Begin D3 Javascript -->
@@ -42,22 +42,24 @@
             }
 
             // Setup settings for graphic
-            var canvas_width = 1200;
-            var canvas_height = 600;
+            var canvas_width = 1045;
+            var canvas_height = 803;
             var padding = 30;  // for chart edges
 
             // Create scale functions
             var xScale = d3.scale.linear()  // xScale is width of graphic
-                            .domain([0, d3.max(dataset, function(d) {
-                                return d[0];  // input domain
-                            })])
-                            .range([padding, canvas_width - padding * 2]); // output range
+                          .domain([padding, canvas_width - padding * 2])
+                            // .domain([0, d3.max(dataset, function(d) {
+                            //     return d[0];  // input domain
+                            // })])
+                          .range([padding + 50, canvas_width - padding * 2]); // output range
 
             var yScale = d3.scale.linear()  // yScale is height of graphic
-                            .domain([0, d3.max(dataset, function(d) {
-                                return d[1];  // input domain
-                            })])
-                            .range([canvas_height - padding, padding]);  // remember y starts on top going down so we flip
+                          .domain([padding, canvas_height - padding * 2 + 200])
+                            // .domain([0, d3.max(dataset, function(d) {
+                            //     return d[1];  // input domain
+                            // })])
+                          .range([canvas_height - padding -50, padding]);  // remember y starts on top going down so we flip
 
             // Define X axis
             var xAxis = d3.svg.axis()
@@ -76,7 +78,7 @@
                 .append("svg")
                 .attr("width", canvas_width)
                 .attr("height", canvas_height)
-
+                ;
 
             var defs = svg.append("defs");
 
@@ -91,6 +93,26 @@
               .attr("preserveAspectRatio", "none")
               .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
               .attr("xlink:href", "assets/icons_tracer_40.png");
+
+            defs.append("pattern")
+              .attr("id", "fill2")
+              .attr("height", "100%")
+              .attr("width", "100%")
+              .attr("patternContentUInits", "objectBoundingBox")
+              .append("image")
+              .attr("height", 743)
+              .attr("width", 955)
+              .attr("preserveAspectRatio", "none")
+              .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+              .attr("xlink:href", "assets/hanamura.jpg");
+
+            var map = svg.append("rect")
+                .attr("height", "100%")
+                .attr("width", "100%")
+                .attr("y", 30)
+                .attr("x", 30)
+                .attr("fill", "url(#fill2)")
+                ;
 
             // Create Circles
             var circles = svg.selectAll("circle")
@@ -148,8 +170,8 @@
                         .duration(1000)  // Length of animation
                         .each("start", function() {  // Start animation
                             d3.select(this)  // 'this' means the current element
-                                .attr("fill", "black")  // Change color
-                                .attr("r", 5);  // Change size
+                                // .attr("r", 5)  // Change size
+                                // .style("fill", "black");  // Change color
                         })
                         .delay(function(d, i) {
                             return i / dataset.length * 500;  // Dynamic delay (i.e. each item delays a little longer)
@@ -165,21 +187,21 @@
                             d3.select(this)  // 'this' means the current element
                                 .transition()
                                 .duration(500)
-                                .attr("fill", "url(#fill1)")  // Change color
+                                .style("fill", "url(#fill1)")  // Change color
                                 .attr("r", 20);  // Change radius
                         });
 
-                        // Update X Axis
-                        svg.select(".x.axis")
-                            .transition()
-                            .duration(1000)
-                            .call(xAxis);
-
-                        // Update Y Axis
-                        svg.select(".y.axis")
-                            .transition()
-                            .duration(100)
-                            .call(yAxis);
+                        // // Update X Axis
+                        // svg.select(".x.axis")
+                        //     .transition()
+                        //     .duration(1000)
+                        //     .call(xAxis);
+                        //
+                        // // Update Y Axis
+                        // svg.select(".y.axis")
+                        //     .transition()
+                        //     .duration(100)
+                        //     .call(yAxis);
                 });
 
   </script>
