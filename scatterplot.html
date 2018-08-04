@@ -23,13 +23,48 @@
     <!-- End CSS (Styling) -->
 
   <body>
-    <h2>OW Map Test</h2>
-    <p>This is the first draft of a dynamic minimap for overwatch</p>
+    <!-- <h2>OW Map Test</h2>
+    <p>This is the first draft of a dynamic minimap for overwatch</p> -->
     <h4>Click to randomize position</h4>
     <h3></h3>
 
   <!-- Begin D3 Javascript -->
   <script type="text/javascript">
+
+
+  // Read csv
+  var datasettwo = [];
+  var readData = d3.csv("data/match1-cleaned.csv",
+      function(error, rows) {
+        rows.forEach(function(r) {
+            datasettwo.push({
+                time: +r.time_0,
+                heroid: r.heroid,
+                teamid: r.teamid,
+                eventtype: r.eventtype,
+                roletype: r.roletype,
+                pos_x: +r.pos_x,
+                pos_z: +r.pos_z,
+                amount: +r.amount
+            })
+          });
+
+          // Return min and max values, for debugging only
+          var minTime = console.log(d3.min(datasettwo,function(d){ return d.time; }));
+          var maxTime = console.log(d3.max(datasettwo,function(d){ return d.time; }));
+
+          // Sort dataset based on time
+          var sortdata = datasettwo.sort(function(a,b) {
+              return d3.ascending(a.time, b.time)
+          });
+
+
+          nestedFunc();
+      });
+
+  function nestedFunc(){
+
+            var logconsole = console.log(datasettwo);
 
     // Setup data
             var dataset = [];  // Initialize empty array
@@ -42,24 +77,30 @@
             }
 
             // Setup settings for graphic
-            var canvas_width = 1045;
-            var canvas_height = 803;
+            var canvas_width = 1660;
+            var canvas_height = 960;
             var padding = 30;  // for chart edges
 
             // Create scale functions
             var xScale = d3.scale.linear()  // xScale is width of graphic
-                          .domain([padding, canvas_width - padding * 2])
+                          .domain([padding, canvas_width - padding])
                             // .domain([0, d3.max(dataset, function(d) {
                             //     return d[0];  // input domain
                             // })])
-                          .range([padding + 50, canvas_width - padding * 2]); // output range
+                          .range([padding, canvas_width - padding]); // output range
 
             var yScale = d3.scale.linear()  // yScale is height of graphic
-                          .domain([padding, canvas_height - padding * 2 + 200])
+                          .domain([padding, canvas_height - padding * 2])
                             // .domain([0, d3.max(dataset, function(d) {
                             //     return d[1];  // input domain
                             // })])
-                          .range([canvas_height - padding -50, padding]);  // remember y starts on top going down so we flip
+                          .range([canvas_height - padding, padding]);  // remember y starts on top going down so we flip
+
+            // Update scale domains
+            xScale.domain([0, d3.max(dataset, function(d) {
+                return d[0]; })]);
+            yScale.domain([0, d3.max(dataset, function(d) {
+                return d[1]; })]);
 
             // Define X axis
             var xAxis = d3.svg.axis()
@@ -94,25 +135,40 @@
               .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
               .attr("xlink:href", "assets/icons_tracer_40.png");
 
+            // Append Map Background
+
             defs.append("pattern")
               .attr("id", "fill2")
               .attr("height", "100%")
               .attr("width", "100%")
               .attr("patternContentUInits", "objectBoundingBox")
               .append("image")
-              .attr("height", 743)
-              .attr("width", 955)
+              .attr("height", 900)
+              .attr("width", 1600)
               .attr("preserveAspectRatio", "none")
               .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-              .attr("xlink:href", "assets/hanamura.jpg");
+              .attr("xlink:href", "assets/ruins1600.png");
 
             var map = svg.append("rect")
                 .attr("height", "100%")
                 .attr("width", "100%")
-                .attr("y", 30)
-                .attr("x", 30)
+                .attr("y", padding)
+                .attr("x", padding)
                 .attr("fill", "url(#fill2)")
                 ;
+
+            // Add to X axis
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + (canvas_height - padding) +")")
+                .call(xAxis);
+
+            // Add to Y axis
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + padding +",0)")
+                .call(yAxis);
+
 
             // Create Circles
             var circles = svg.selectAll("circle")
@@ -129,21 +185,8 @@
                 .attr("stroke", "#565656")
                 .attr("stroke-width", 1)
                 .style("fill", "url(#fill1)")
+                .attr("render-order", 1)
                 ;  // radius
-
-
-
-            // Add to X axis
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + (canvas_height - padding) +")")
-                .call(xAxis);
-
-            // Add to Y axis
-            svg.append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(" + padding +",0)")
-                .call(yAxis);
 
             // On click, update with new data
             d3.select("h4")
@@ -203,6 +246,7 @@
                         //     .duration(100)
                         //     .call(yAxis);
                 });
+        };
 
   </script>
   </body>
