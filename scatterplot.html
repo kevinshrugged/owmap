@@ -24,7 +24,7 @@
 
   <body>
     <!-- <h2>OW Map Test</h2>
-    <p>This is the first draft of a dynamic minimap for overwatch</p> -->
+    <p>This is the first draft of a dynamic minimap for OW</p> -->
     <h4>Click to randomize position</h4>
     <h3></h3>
 
@@ -39,6 +39,8 @@
         rows.forEach(function(r) {
             datasettwo.push({
                 time: +r.time_0,
+                bnetid: r.bnetid,
+                playerid: +r.playerid,
                 heroid: r.heroid,
                 teamid: r.teamid,
                 eventtype: r.eventtype,
