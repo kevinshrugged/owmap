@@ -8,7 +8,6 @@
       font-size: 12px;
       color: #696969;
     }
-
     #play-button {
       position: absolute;
       top: 140px;
@@ -24,39 +23,32 @@
       cursor: pointer;
       height: 30px;
     }
-
     #play-button:hover {
       background-color: #696969;
     }
-
     .ticks {
       font-size: 10px;
     }
-
     .track,
     .track-inset,
     .track-overlay {
       stroke-linecap: round;
     }
-
     .track {
       stroke: #000;
       stroke-opacity: 0.3;
       stroke-width: 10px;
     }
-
     .track-inset {
       stroke: #dcdcdc;
       stroke-width: 8px;
     }
-
     .track-overlay {
       pointer-events: stroke;
       stroke-width: 50px;
       stroke: transparent;
       cursor: crosshair;
     }
-
     .handle {
       fill: #fff;
       stroke: #000;
@@ -71,40 +63,30 @@
   <button id="play-button">Play</button>
 </div>
 <script>
-
 var formatDateIntoYear = d3.timeFormat("%Y");
 var formatDate = d3.timeFormat("%b %Y");
 var parseDate = d3.timeParse("%m/%d/%y");
-
 var startDate = new Date("2004-11-01"),
     endDate = new Date("2017-04-01");
-
 var margin = {top:50, right:50, bottom:0, left:50},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
-
 var svg = d3.select("#vis")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
-
 ////////// slider //////////
-
 var moving = false;
 var currentValue = 0;
 var targetValue = width;
-
 var playButton = d3.select("#play-button");
-
 var x = d3.scaleTime()
     .domain([startDate, endDate])
     .range([0, targetValue])
     .clamp(true);
-
 var slider = svg.append("g")
     .attr("class", "slider")
     .attr("transform", "translate(" + margin.left + "," + height/5 + ")");
-
 slider.append("line")
     .attr("class", "track")
     .attr("x1", x.range()[0])
@@ -120,7 +102,6 @@ slider.append("line")
           update(x.invert(currentValue));
         })
     );
-
 slider.insert("g", ".track-overlay")
     .attr("class", "ticks")
     .attr("transform", "translate(0," + 18 + ")")
@@ -132,30 +113,22 @@ slider.insert("g", ".track-overlay")
     .attr("y", 10)
     .attr("text-anchor", "middle")
     .text(function(d) { return formatDateIntoYear(d); });
-
 var handle = slider.insert("circle", ".track-overlay")
     .attr("class", "handle")
     .attr("r", 9);
-
 var label = slider.append("text")
     .attr("class", "label")
     .attr("text-anchor", "middle")
     .text(formatDate(startDate))
     .attr("transform", "translate(0," + (-25) + ")")
-
-
 ////////// plot //////////
-
 var dataset;
-
 var plot = svg.append("g")
     .attr("class", "plot")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 d3.csv("circles.csv", prepare, function(data) {
   dataset = data;
   drawPlot(dataset);
-
   playButton
     .on("click", function() {
     var button = d3.select(this);
@@ -172,13 +145,11 @@ d3.csv("circles.csv", prepare, function(data) {
     console.log("Slider moving: " + moving);
   })
 })
-
 function prepare(d) {
   d.id = d.id;
   d.date = parseDate(d.date);
   return d;
 }
-
 function step() {
   update(x.invert(currentValue));
   currentValue = currentValue + (targetValue/151);
@@ -191,11 +162,9 @@ function step() {
     console.log("Slider moving: " + moving);
   }
 }
-
 function drawPlot(data) {
   var locations = plot.selectAll(".location")
     .data(data);
-
   // if filtered dataset has more circles than already existing, transition new ones in
   locations.enter()
     .append("circle")
@@ -211,25 +180,21 @@ function drawPlot(data) {
       .attr("r", 25)
         .transition()
         .attr("r", 8);
-
   // if filtered dataset has less circles than already existing, remove excess
   locations.exit()
     .remove();
 }
-
 function update(h) {
   // update position and text of label according to slider scale
   handle.attr("cx", x(h));
   label
     .attr("x", x(h))
     .text(formatDate(h));
-
   // filter data set and redraw plot
   var newData = dataset.filter(function(d) {
     return d.date < h;
   })
   drawPlot(newData);
 }
-
 </script>
 </body>

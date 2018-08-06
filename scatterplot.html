@@ -2,7 +2,98 @@
 <html>
   <head>
     <!-- Load D3 from site -->
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+
+    <style>
+      body {
+        font-family:"avenir next", Arial, sans-serif;
+        font-size: 12px;
+        color: #696969;
+      }
+
+      #play-button {
+        /* position: absolute;
+        top: 140px;
+        left: 50px; */
+        background: #79A8B8;
+        padding-right: 26px;
+        border-radius: 5px;
+        border: none;
+        color: white;
+        margin: 0 0 0 25px;
+        padding: 0 12px;
+        width: 60px;
+        cursor: pointer;
+        height: 30px;
+      }
+
+      #play-button:hover {
+        background-color: #696969;
+      }
+
+      .ticks {
+        font-size: 10px;
+      }
+
+      .track,
+      .track-inset,
+      .track-overlay {
+        stroke-linecap: round;
+      }
+
+      .track {
+        stroke: #000;
+        stroke-opacity: 0.3;
+        stroke-width: 10px;
+      }
+
+      .track-inset {
+        stroke: #dcdcdc;
+        stroke-width: 8px;
+      }
+
+      .track-overlay {
+        pointer-events: stroke;
+        stroke-width: 50px;
+        stroke: transparent;
+        cursor: crosshair;
+      }
+
+      .handle {
+        fill: #fff;
+        stroke: #000;
+        stroke-opacity: 0.5;
+        stroke-width: 1.25px;
+      }
+
+      .xaxis path{
+        stroke: #A5A5A5;
+      }
+
+      .yaxis path{
+        stroke: #A5A5A5;
+      }
+
+      .xaxis line{
+        stroke: #A5A5A5;
+      }
+
+      .yaxis line{
+        stroke: #A5A5A5;
+      }
+
+      .xaxis text{
+        fill: #A5A5A5;
+      }
+
+      .yaxis text{
+        fill: #A5A5A5;
+      }
+
+
+
+    </style>
+
   </head>
 
     <!-- CSS (Styling) -->
@@ -25,8 +116,11 @@
   <body>
     <!-- <h2>OW Map Test</h2>
     <p>This is the first draft of a dynamic minimap for OW</p> -->
-    <h4>Click to randomize position</h4>
+    <div id="vis">
+      <button id="play-button">Play</button>
+    </div>
     <h3></h3>
+    <h4></h4>
 
   <!-- Begin D3 Javascript -->
   <script type="text/javascript">
@@ -38,7 +132,7 @@
       function(error, rows) {
         rows.forEach(function(r) {
             datasettwo.push({
-                time: +r.time_0,
+                time: +r.time,
                 bnetid: r.bnetid,
                 playerid: +r.playerid,
                 heroid: r.heroid,
@@ -52,8 +146,10 @@
           });
 
           // Return min and max values, for debugging only
-          var minTime = console.log(d3.min(datasettwo,function(d){ return d.time; }));
-          var maxTime = console.log(d3.max(datasettwo,function(d){ return d.time; }));
+
+          var minTimeSeconds = console.log(d3.min(datasettwo,function(d){ return d.time; })/1000);
+          var maxTimeSeconds = console.log(d3.max(datasettwo,function(d){ return d.time; })/1000);
+
 
           // Sort dataset based on time
           var sortdata = datasettwo.sort(function(a,b) {
@@ -65,6 +161,11 @@
       });
 
   function nestedFunc(){
+
+    // set max/min time scale
+
+            var minTime = d3.min(datasettwo,function(d){ return d.time; });
+            var maxTime = d3.max(datasettwo,function(d){ return d.time; });
 
             var logconsole = console.log(datasettwo);
 
@@ -79,24 +180,28 @@
             }
 
             // Setup settings for graphic
-            var canvas_width = 1660;
-            var canvas_height = 960;
-            var padding = 30;  // for chart edges
+
+            var y_padding = 80;  // for chart edges
+            var x_padding = 30;
+            var padding = 30;
+            var canvas_width = 1600 + x_padding * 2;
+            var canvas_height = 900 + y_padding *2;
+            var slider_height = 30;
 
             // Create scale functions
-            var xScale = d3.scale.linear()  // xScale is width of graphic
-                          .domain([padding, canvas_width - padding])
+            var xScale = d3.scaleLinear()  // xScale is width of graphic
+                          .domain([x_padding, canvas_width - x_padding])
                             // .domain([0, d3.max(dataset, function(d) {
                             //     return d[0];  // input domain
                             // })])
-                          .range([padding, canvas_width - padding]); // output range
+                          .range([x_padding, canvas_width - x_padding]); // output range
 
-            var yScale = d3.scale.linear()  // yScale is height of graphic
-                          .domain([padding, canvas_height - padding * 2])
+            var yScale = d3.scaleLinear()  // yScale is height of graphic
+                          .domain([y_padding, canvas_height - y_padding * 2])
                             // .domain([0, d3.max(dataset, function(d) {
                             //     return d[1];  // input domain
                             // })])
-                          .range([canvas_height - padding, padding]);  // remember y starts on top going down so we flip
+                          .range([canvas_height - y_padding, y_padding]);  // remember y starts on top going down so we flip
 
             // Update scale domains
             xScale.domain([0, d3.max(dataset, function(d) {
@@ -105,15 +210,13 @@
                 return d[1]; })]);
 
             // Define X axis
-            var xAxis = d3.svg.axis()
+            var xAxis = d3.axisBottom()
                             .scale(xScale)
-                            .orient("bottom")
                             .ticks(5);
 
             // Define Y axis
-            var yAxis = d3.svg.axis()
+            var yAxis = d3.axisLeft()
                             .scale(yScale)
-                            .orient("left")
                             .ticks(5);
 
             // Create SVG element
@@ -154,21 +257,21 @@
             var map = svg.append("rect")
                 .attr("height", "100%")
                 .attr("width", "100%")
-                .attr("y", padding)
-                .attr("x", padding)
+                .attr("y", y_padding)
+                .attr("x", x_padding)
                 .attr("fill", "url(#fill2)")
                 ;
 
             // Add to X axis
             svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + (canvas_height - padding) +")")
+                .attr("class", "xaxis")
+                .attr("transform", "translate(0," + (canvas_height - y_padding) +")")
                 .call(xAxis);
 
             // Add to Y axis
             svg.append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(" + padding +",0)")
+                .attr("class", "yaxis")
+                .attr("transform", "translate(" + x_padding +",0)")
                 .call(yAxis);
 
 
@@ -190,8 +293,59 @@
                 .attr("render-order", 1)
                 ;  // radius
 
+
+        // create slider
+
+                  var moving = false;
+                  var currentValue = 0;
+                  var targetValue = canvas_width - (x_padding*2);
+                  var playButton = d3.select("#play-button");
+                  var x = d3.scaleLinear()
+                      .domain([minTime, maxTime])
+                      .range([0, targetValue])
+                      .clamp(true);
+                  var slider = svg.append("g")
+                      .attr("class", "slider")
+                      .attr("transform", "translate(" + padding /*margin */ + "," + 50/5 /*height*/ + ")");
+                  slider.append("line")
+                      .attr("class", "track")
+                      .attr("x1", x.range()[0])
+                      .attr("x2", x.range()[1])
+                    .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+                      .attr("class", "track-inset")
+                    .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+                      .attr("class", "track-overlay")
+                      .call(d3.drag()
+                          .on("start.interrupt", function() { slider.interrupt(); })
+                          .on("start drag", function() {
+                            currentValue = d3.event.x;
+                            update(x.invert(currentValue));
+                          })
+                      );
+                  slider.insert("g", ".track-overlay")
+                      .attr("class", "ticks")
+                      .attr("transform", "translate(0," + 18 + ")")
+                    .selectAll("text")
+                      .data(x.ticks(10))
+                      .enter()
+                      .append("text")
+                      .attr("x", x)
+                      .attr("y", 10)
+                      .attr("text-anchor", "middle")
+                      .text(function(d) { return d; });
+                  var handle = slider.insert("circle", ".track-overlay")
+                      .attr("class", "handle")
+                      .attr("r", 9);
+                  var label = slider.append("text")
+                      .attr("class", "label")
+                      .attr("text-anchor", "middle")
+                      .text(minTime)
+                      .attr("transform", "translate(0," + (-25) + ")");
+
+
+
             // On click, update with new data
-            d3.select("h4")
+            d3.select("#play-button")
                 .on("click", function() {
                     var numValues = dataset.length;  // Get original dataset's length
                     var maxRange = Math.random() * 1000;  // Get max range of new values
@@ -213,7 +367,7 @@
                         .data(dataset)  // Update with new data
                         .transition()  // Transition from old to new
                         .duration(1000)  // Length of animation
-                        .each("start", function() {  // Start animation
+                        .on("start", function() {  // Start animation
                             d3.select(this)  // 'this' means the current element
                                 // .attr("r", 5)  // Change size
                                 // .style("fill", "black");  // Change color
@@ -228,7 +382,7 @@
                         .attr("cy", function(d) {
                             return yScale(d[1]);  // Circle's Y
                         })
-                        .each("end", function() {  // End animation
+                        .on("end", function() {  // End animation
                             d3.select(this)  // 'this' means the current element
                                 .transition()
                                 .duration(500)
