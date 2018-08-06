@@ -137,19 +137,18 @@
                 playerid: +r.playerid,
                 heroid: r.heroid,
                 teamid: r.teamid,
-                eventtype: r.eventtype,
-                roletype: r.roletype,
+                // eventtype: r.eventtype,
+                // roletype: r.roletype,
                 pos_x: +r.pos_x,
                 pos_z: +r.pos_z,
-                amount: +r.amount
+                // amount: +r.amount
             })
           });
 
           // Return min and max values, for debugging only
 
-          var minTimeSeconds = console.log(d3.min(datasettwo,function(d){ return d.time; })/1000);
-          var maxTimeSeconds = console.log(d3.max(datasettwo,function(d){ return d.time; })/1000);
-
+          var minTimeSeconds = console.log(d3.min(datasettwo,function(d){ return d.time; }));
+          var maxTimeSeconds = console.log(d3.max(datasettwo,function(d){ return d.time; }));
 
           // Sort dataset based on time
           var sortdata = datasettwo.sort(function(a,b) {
@@ -166,6 +165,10 @@
 
             var minTime = d3.min(datasettwo,function(d){ return d.time; });
             var maxTime = d3.max(datasettwo,function(d){ return d.time; });
+            var max_pos_x = d3.max(datasettwo,function(d){ return d.pos_x; });
+            var min_pos_x = d3.min(datasettwo,function(d){ return d.pos_x; });
+            var max_pos_z = d3.max(datasettwo,function(d){ return d.pos_z; });
+            var min_pos_z = d3.min(datasettwo,function(d){ return d.pos_z; });
 
             var logconsole = console.log(datasettwo);
 
@@ -193,24 +196,34 @@
 
             // Create scale functions
             var xScale = d3.scaleLinear()  // xScale is width of graphic
-                          .domain([x_padding, canvas_width - x_padding])
+                          .domain([0, max_pos_x])
+                          // .domain([x_padding, canvas_width - x_padding])
                             // .domain([0, d3.max(dataset, function(d) {
                             //     return d[0];  // input domain
                             // })])
                           .range([x_padding, canvas_width - x_padding]); // output range
 
             var yScale = d3.scaleLinear()  // yScale is height of graphic
-                          .domain([y_padding, canvas_height - y_padding * 2])
+                          .domain([0, max_pos_z])
+                          // .domain([y_padding, canvas_height - y_padding * 2])
                             // .domain([0, d3.max(dataset, function(d) {
                             //     return d[1];  // input domain
                             // })])
                           .range([canvas_height - y_padding, y_padding]);  // remember y starts on top going down so we flip
 
+            // // Update scale domains
+            // xScale.domain([0, d3.max(dataset, function(d) {
+            //     return d[1]; })]);
+            // yScale.domain([0, d3.max(dataset, function(d) {
+            //     return d[2]; })]);
+
             // Update scale domains
-            xScale.domain([0, d3.max(dataset, function(d) {
-                return d[1]; })]);
-            yScale.domain([0, d3.max(dataset, function(d) {
-                return d[2]; })]);
+            console.log("max_pos_x: " + String(max_pos_x));
+            console.log("max_pos_z: " + String(max_pos_z));
+            console.log("min_pos_x: " + String(min_pos_x));
+            console.log("min_pos_z: " + String(min_pos_z));
+            xScale.domain([0, max_pos_x]);
+            yScale.domain([0, max_pos_z]);
 
             // Define X axis
             var xAxis = d3.axisBottom()
@@ -335,7 +348,7 @@
                       .attr("x", x)
                       .attr("y", 10)
                       .attr("text-anchor", "middle")
-                      .text(function(d) { return d/1000; });
+                      .text(function(d) { return d/2; });
                   var handle = slider.insert("circle", ".track-overlay")
                       .attr("class", "handle")
                       .attr("r", 9);
@@ -352,46 +365,108 @@
                     handle.attr("cx", x(h));
                     label
                       .attr("x", x(h))
-                      .text(Math.round(h/1000));
+                      .text(Math.round(h/2));
                     // filter data set and redraw plot
-                    var newData = dataset.filter(function(d) {
-                      return d.date < h;
+                    var newData = datasettwo.filter(function(d) {
+                      return d.time == Math.round(h);
                     })
                     console.log(Math.round(h));
-                    // drawPlot(newData);
+                    // console.log(newData);
+                    // var filtered_new_data = newData.filter(function(d) {
+                    //   return d.playerid == 11
+                    // });
+                    // console.log(filtered_new_data)
+                    // console.log(filtered_new_data[0].pos_x)
+                    updateCirclesDynamic(newData)
                   }
 
 
 
 
-            // On click, update with new data
-            d3.select("#play-button")
-                .on("click", updateCircles)
+            // // On click, update with new data
+            // d3.select("#play-button")
+            //     .on("click", updateCircles)
+            //
+            // function updateCircles() {
+            //     var numValues = dataset.length;  // Get original dataset's length
+            //     var maxRange = Math.random() * 1000;  // Get max range of new values
+            //     dataset = [];  // Initialize empty array
+            //     for(var i=1; i<=numValues; i++) {
+            //         var playerid = i
+            //         var newNumber1 = Math.floor(Math.random() * maxRange);  // Random int for x
+            //         var newNumber2 = Math.floor(Math.random() * maxRange);  // Random int for y
+            //         dataset.push([playerid, newNumber1, newNumber2]);  // Add new numbers to array
+            //     }
+            //
+            //     console.log(dataset)
+            //
+            //     // Update scale domains
+            //     xScale.domain([0, d3.max(dataset, function(d) {
+            //         return d[1]; })]);
+            //     yScale.domain([0, d3.max(dataset, function(d) {
+            //         return d[2]; })]);
+            //
+            //     // Update circles
+            //     svg.selectAll("circle")
+            //         .data(dataset)  // Update with new data
+            //         .transition()  // Transition from old to new
+            //         .duration(1000)  // Length of animation
+            //         .on("start", function() {  // Start animation
+            //             d3.select(this)  // 'this' means the current element
+            //                 // .attr("r", 5)  // Change size
+            //                 // .style("fill", "black");  // Change color
+            //         })
+            //         .delay(function(d, i) {
+            //             return i / dataset.length * 500;  // Dynamic delay (i.e. each item delays a little longer)
+            //         })
+            //         //.ease("linear")  // Transition easing - default 'variable' (i.e. has acceleration), also: 'circle', 'elastic', 'bounce', 'linear'
+            //         .attr("cx", function(d) {
+            //             return xScale(d[1]);  // Circle's X
+            //         })
+            //         .attr("cy", function(d) {
+            //             return yScale(d[2]);  // Circle's Y
+            //         })
+            //         .on("end", function() {  // End animation
+            //             d3.select(this)  // 'this' means the current element
+            //                 .transition()
+            //                 .duration(500)
+            //                 .style("fill", "url(#fill1)")  // Change color
+            //                 .attr("r", 20);  // Change radius
+            //         })
+            //   }
 
-            function updateCircles() {
-                var numValues = dataset.length;  // Get original dataset's length
-                var maxRange = Math.random() * 1000;  // Get max range of new values
+
+            function updateCirclesDynamic(incoming_data) {
+                var numValues = 12;  // Get original dataset's length
                 dataset = [];  // Initialize empty array
                 for(var i=1; i<=numValues; i++) {
-                    var playerid = i
-                    var newNumber1 = Math.floor(Math.random() * maxRange);  // Random int for x
-                    var newNumber2 = Math.floor(Math.random() * maxRange);  // Random int for y
-                    dataset.push([playerid, newNumber1, newNumber2]);  // Add new numbers to array
+
+                  var filtered_data = incoming_data.filter(function(d) {
+                    return d.playerid == i
+                  });
+                  // console.log(filtered_data)
+                  try {
+                  // console.log(filtered_data[0])
+                  dataset.push([i, filtered_data[0].pos_x, filtered_data[0].pos_z]);  // Add new numbers to array
+                  }
+                  catch(e) {
+
+                  }
+                  // console.log(filtered_data)
+                  // console.log(filtered_data.pos_x)
                 }
 
                 console.log(dataset)
 
                 // Update scale domains
-                xScale.domain([0, d3.max(dataset, function(d) {
-                    return d[1]; })]);
-                yScale.domain([0, d3.max(dataset, function(d) {
-                    return d[2]; })]);
+                // xScale.domain([0, max_pos_x]);
+                // yScale.domain([0, max_pos_z]);
 
                 // Update circles
                 svg.selectAll("circle")
                     .data(dataset)  // Update with new data
                     .transition()  // Transition from old to new
-                    .duration(1000)  // Length of animation
+                    .duration(100)  // Length of animation
                     .on("start", function() {  // Start animation
                         d3.select(this)  // 'this' means the current element
                             // .attr("r", 5)  // Change size
@@ -402,10 +477,10 @@
                     })
                     //.ease("linear")  // Transition easing - default 'variable' (i.e. has acceleration), also: 'circle', 'elastic', 'bounce', 'linear'
                     .attr("cx", function(d) {
-                        return xScale(d[1]);  // Circle's X
+                        return xScale(filtered_data[0].pos_x);  // Circle's X
                     })
                     .attr("cy", function(d) {
-                        return yScale(d[2]);  // Circle's Y
+                        return yScale(filtered_data[0].pos_z);  // Circle's Y
                     })
                     .on("end", function() {  // End animation
                         d3.select(this)  // 'this' means the current element
@@ -413,56 +488,7 @@
                             .duration(500)
                             .style("fill", "url(#fill1)")  // Change color
                             .attr("r", 20);  // Change radius
-                    }
-
-            
-
-            function updateCirclesDynamic() {
-                var numValues = dataset.length;  // Get original dataset's length
-                var maxRange = Math.random() * 1000;  // Get max range of new values
-                dataset = [];  // Initialize empty array
-                for(var i=1; i<=numValues; i++) {
-                    var playerid = i
-                    var newNumber1 = Math.floor(Math.random() * maxRange);  // Random int for x
-                    var newNumber2 = Math.floor(Math.random() * maxRange);  // Random int for y
-                    dataset.push([playerid, newNumber1, newNumber2]);  // Add new numbers to array
-                }
-
-                console.log(dataset)
-
-                // Update scale domains
-                xScale.domain([0, d3.max(dataset, function(d) {
-                    return d[1]; })]);
-                yScale.domain([0, d3.max(dataset, function(d) {
-                    return d[2]; })]);
-
-                // Update circles
-                svg.selectAll("circle")
-                    .data(dataset)  // Update with new data
-                    .transition()  // Transition from old to new
-                    .duration(1000)  // Length of animation
-                    .on("start", function() {  // Start animation
-                        d3.select(this)  // 'this' means the current element
-                            // .attr("r", 5)  // Change size
-                            // .style("fill", "black");  // Change color
                     })
-                    .delay(function(d, i) {
-                        return i / dataset.length * 500;  // Dynamic delay (i.e. each item delays a little longer)
-                    })
-                    //.ease("linear")  // Transition easing - default 'variable' (i.e. has acceleration), also: 'circle', 'elastic', 'bounce', 'linear'
-                    .attr("cx", function(d) {
-                        return xScale(d[1]);  // Circle's X
-                    })
-                    .attr("cy", function(d) {
-                        return yScale(d[2]);  // Circle's Y
-                    })
-                    .on("end", function() {  // End animation
-                        d3.select(this)  // 'this' means the current element
-                            .transition()
-                            .duration(500)
-                            .style("fill", "url(#fill1)")  // Change color
-                            .attr("r", 20);  // Change radius
-                    }
 
                         // // Update X Axis
                         // svg.select(".x.axis")
@@ -475,7 +501,7 @@
                         //     .transition()
                         //     .duration(100)
                         //     .call(yAxis);
-                });
+                }
         };
 
   </script>
