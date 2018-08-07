@@ -147,8 +147,8 @@
 
           // Return min and max values, for debugging only
 
-          var minTimeSeconds = console.log(d3.min(datasettwo,function(d){ return d.time; }));
-          var maxTimeSeconds = console.log(d3.max(datasettwo,function(d){ return d.time; }));
+          var minTimeSeconds = d3.min(datasettwo,function(d){ return d.time; });
+          var maxTimeSeconds = d3.max(datasettwo,function(d){ return d.time; });
 
           // Sort dataset based on time
           var sortdata = datasettwo.sort(function(a,b) {
@@ -170,20 +170,37 @@
             var max_pos_z = d3.max(datasettwo,function(d){ return d.pos_z; });
             var min_pos_z = d3.min(datasettwo,function(d){ return d.pos_z; });
 
-            var logconsole = console.log(datasettwo);
+            // var logconsole = console.log(datasettwo);
 
     // Setup data
-            var dataset = [];  // Initialize empty array
-            var numDataPoints = 12;  // Number of dummy data points
-            var maxRange = Math.random() * 1000;  // Max range of new values
-            for(var i=1; i<=numDataPoints; i++) {
-                var playerid = i
-                var newNumber1 = Math.floor(Math.random() * maxRange);  // New random integer
-                var newNumber2 = Math.floor(Math.random() * maxRange);  // New random integer
-                dataset.push([playerid, newNumber1, newNumber2]);  // Add new number to array
-            }
+            var numValues = 12;  // Get original dataset's length
+            dataset = [];  // Initialize empty array
+            for(var i=1; i<=numValues; i++) {
 
+              var initial_data = datasettwo.filter(function(d) { return d.playerid == i});
+              var initial_data_min_time = d3.min(initial_data,function(d){ return d.time });
+              var initial_data_min_time_player = initial_data.filter(function(d) { return d.time == initial_data_min_time });
+              // console.log(initial_data_min_time_player)
+              dataset.push([i, initial_data_min_time_player[0].pos_x, initial_data_min_time_player[0].pos_z]);
+            }
             console.log(dataset)
+
+              // console.log(filtered_data)
+              // console.log(filtered_data.pos_x)
+            //
+            //
+            //
+            // var dataset = [];  // Initialize empty array
+            // var numDataPoints = 12;  // Number of dummy data points
+            // var maxRange = Math.random() * 1000;  // Max range of new values
+            // for(var i=1; i<=numDataPoints; i++) {
+            //     var playerid = i
+            //     var newNumber1 = Math.floor(Math.random() * maxRange);  // New random integer
+            //     var newNumber2 = Math.floor(Math.random() * maxRange);  // New random integer
+            //     dataset.push([playerid, newNumber1, newNumber2]);  // Add new number to array
+            // }
+            //
+            // console.log(dataset)
 
             // Setup settings for graphic
 
@@ -241,6 +258,8 @@
                 .attr("width", canvas_width)
                 .attr("height", canvas_height)
                 ;
+
+
 
             var defs = svg.append("defs");
 
@@ -377,7 +396,8 @@
                     // });
                     // console.log(filtered_new_data)
                     // console.log(filtered_new_data[0].pos_x)
-                    updateCirclesDynamic(newData)
+                    console.log(dataset)
+                    updateCirclesDynamic(newData,dataset)
                   }
 
 
@@ -436,9 +456,9 @@
             //   }
 
 
-            function updateCirclesDynamic(incoming_data) {
+            function updateCirclesDynamic(incoming_data,old_data) {
                 var numValues = 12;  // Get original dataset's length
-                dataset = [];  // Initialize empty array
+                // dataset = [];  // Initialize empty array
                 for(var i=1; i<=numValues; i++) {
 
                   var filtered_data = incoming_data.filter(function(d) {
@@ -446,21 +466,21 @@
                   });
                   // console.log(filtered_data)
                   try {
-                  // console.log(filtered_data[0])
-                  dataset.push([i, filtered_data[0].pos_x, filtered_data[0].pos_z]);  // Add new numbers to array
+                  dataset.splice(i-1, 1, [i, filtered_data[0].pos_x, filtered_data[0].pos_z]);  // Add new numbers to array
                   }
-                  catch(e) {
 
+                  catch(e) {
+                  dataset.splice(i-1, 1, [old_data[i-1][0], old_data[i-1][1], old_data[i-1][2]])
                   }
                   // console.log(filtered_data)
                   // console.log(filtered_data.pos_x)
-                }
 
-                console.log(dataset)
 
                 // Update scale domains
                 // xScale.domain([0, max_pos_x]);
                 // yScale.domain([0, max_pos_z]);
+
+                console.log(filtered_data[0]);
 
                 // Update circles
                 svg.selectAll("circle")
@@ -477,10 +497,23 @@
                     })
                     //.ease("linear")  // Transition easing - default 'variable' (i.e. has acceleration), also: 'circle', 'elastic', 'bounce', 'linear'
                     .attr("cx", function(d) {
-                        return xScale(filtered_data[0].pos_x);  // Circle's X
+                          try {
+                            return xScale(filtered_data[0].pos_x);
+                          }
+                          catch(e) {
+                            return xScale(old_data[i-1][1]);
+                          }
+                          // Circle's X
+
                     })
                     .attr("cy", function(d) {
-                        return yScale(filtered_data[0].pos_z);  // Circle's Y
+                          try {
+                            return yScale(filtered_data[0].pos_z);
+                          }
+                          catch(e) {
+                            return yScale(old_data[i-1][2]);
+                          }
+                          // Circle's Y
                     })
                     .on("end", function() {  // End animation
                         d3.select(this)  // 'this' means the current element
@@ -488,7 +521,7 @@
                             .duration(500)
                             .style("fill", "url(#fill1)")  // Change color
                             .attr("r", 20);  // Change radius
-                    })
+                    });
 
                         // // Update X Axis
                         // svg.select(".x.axis")
@@ -502,6 +535,7 @@
                         //     .duration(100)
                         //     .call(yAxis);
                 }
+              }
         };
 
   </script>
