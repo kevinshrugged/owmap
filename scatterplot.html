@@ -497,23 +497,10 @@
                     })
                     //.ease("linear")  // Transition easing - default 'variable' (i.e. has acceleration), also: 'circle', 'elastic', 'bounce', 'linear'
                     .attr("cx", function(d) {
-                          try {
-                            return xScale(filtered_data[0].pos_x);
-                          }
-                          catch(e) {
-                            return xScale(old_data[i-1][1]);
-                          }
-                          // Circle's X
-
+                        return xScale(d[1]);  // Circle's X
                     })
                     .attr("cy", function(d) {
-                          try {
-                            return yScale(filtered_data[0].pos_z);
-                          }
-                          catch(e) {
-                            return yScale(old_data[i-1][2]);
-                          }
-                          // Circle's Y
+                        return yScale(d[2]);  // Circle's Y
                     })
                     .on("end", function() {  // End animation
                         d3.select(this)  // 'this' means the current element
