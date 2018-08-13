@@ -73,7 +73,7 @@ function main_function() {
   var canvas_width = 1600 + x_padding * 2;
   var canvas_height = 900 + y_padding *2;
   var slider_height = 30;
-  var map_y_squeeze = 60;
+  var map_y_squeeze = 150;
 
   // Scale dataset to image dimensions
   var x_scale = d3.scaleLinear()
@@ -86,7 +86,7 @@ function main_function() {
     .domain([0, max_pos_z]) // data domain
     .range([
       canvas_height - y_padding - map_y_squeeze,
-      y_padding + map_y_squeeze
+      y_padding + map_y_squeeze + 150
     ]); // invert y since y axis is top down
 
   // Execute scale function for data domain
