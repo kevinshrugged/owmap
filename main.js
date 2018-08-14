@@ -582,7 +582,7 @@ function main_function() {
         // easeCircle, easeExp, easeBac
         .ease(d3.easeSin)
         // .attr("r", 20)  // Change size
-        // .style("opacity", .2) // Set the element opacity
+        .style("opacity", .8) // Set the element opacity
         .on("start", function(d) {
           // If statement to evaluate whether hero has changed
           if (d[3] == d[4]) {
